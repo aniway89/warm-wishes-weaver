@@ -7,14 +7,16 @@ import GreetingPopup from './GreetingPopup';
 import CollectedLetters from './CollectedLetters';
 import { useAudio } from '@/hooks/useAudio';
 
-const REQUIRED_LETTERS = ['H', 'A', 'P', 'P', 'Y', 'N', 'E', 'W', 'Y', 'E', 'A', 'R'];
-const UNIQUE_LETTERS = new Set(['H', 'A', 'P', 'Y', 'N', 'E', 'W', 'R']);
+// Target phrase with each position tracked
+const TARGET_PHRASE = "HAPPY NEW YEAR";
+const LETTER_POSITIONS = TARGET_PHRASE.split('').filter(c => c !== ' ');
 
 interface StarData {
   id: string;
   x: number;
   y: number;
   letter: string;
+  letterIndex: number; // Which position in the phrase this letter is for
   collected: boolean;
   speed: number;
   swayOffset: number;
@@ -33,20 +35,30 @@ const NewYearGreeting: React.FC = () => {
   const [targetX, setTargetX] = useState(50);
   const [stars, setStars] = useState<StarData[]>([]);
   const [hearts, setHearts] = useState<HeartData[]>([]);
-  const [collectedLetters, setCollectedLetters] = useState<Set<string>>(new Set());
-  const [letterQueue, setLetterQueue] = useState<string[]>([...REQUIRED_LETTERS]);
+  // Track which positions (0-11) have been collected
+  const [collectedPositions, setCollectedPositions] = useState<Set<number>>(new Set());
+  // Queue of letter indices still needed
+  const [letterQueue, setLetterQueue] = useState<number[]>(
+    LETTER_POSITIONS.map((_, i) => i)
+  );
   const [isComplete, setIsComplete] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [canShoot, setCanShoot] = useState(true);
+  const [gameStarted, setGameStarted] = useState(false);
   
   const gameLoopRef = useRef<number>();
   const lastStarTimeRef = useRef(0);
   const keysRef = useRef<Set<string>>(new Set());
-  const gameBoxRef = useRef<HTMLDivElement>(null);
   
   const { playPopSound, startBackgroundMusic } = useAudio();
+
+  // Start game after a brief delay for entrance animation
+  useEffect(() => {
+    const timer = setTimeout(() => setGameStarted(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 1000);
@@ -90,16 +102,20 @@ const NewYearGreeting: React.FC = () => {
   const spawnStar = useCallback(() => {
     if (letterQueue.length === 0 || isComplete) return;
     
-    const letter = letterQueue[0];
+    // Get the next needed letter index
+    const letterIndex = letterQueue[0];
+    const letter = LETTER_POSITIONS[letterIndex];
+    
     const newStar: StarData = {
       id: `star-${Date.now()}-${Math.random()}`,
       x: 15 + Math.random() * 70,
-      y: -5,
+      y: -8,
       letter,
+      letterIndex,
       collected: false,
-      speed: 0.25 + Math.random() * 0.15,
+      speed: 0.4 + Math.random() * 0.1, // Medium speed
       swayOffset: Math.random() * Math.PI * 2,
-      swaySpeed: 0.02 + Math.random() * 0.01,
+      swaySpeed: 0.015 + Math.random() * 0.01,
     };
     
     setStars(prev => [...prev, newStar]);
@@ -131,7 +147,7 @@ const NewYearGreeting: React.FC = () => {
   }, [handleFirstInteraction]);
 
   useEffect(() => {
-    if (showPopup) return;
+    if (showPopup || !gameStarted) return;
 
     let frameTime = 0;
     
@@ -139,13 +155,14 @@ const NewYearGreeting: React.FC = () => {
       const delta = timestamp - frameTime;
       frameTime = timestamp;
       
-      // Spawn new star periodically
-      if (timestamp - lastStarTimeRef.current > 2500 && letterQueue.length > 0) {
+      // Spawn new star periodically - only if none currently falling
+      const hasActiveStar = stars.some(s => !s.collected);
+      if (!hasActiveStar && letterQueue.length > 0 && timestamp - lastStarTimeRef.current > 800) {
         spawnStar();
         lastStarTimeRef.current = timestamp;
       }
 
-      // Handle keyboard movement - update target
+      // Handle keyboard movement
       if (keysRef.current.has('a') || keysRef.current.has('arrowleft')) {
         setTargetX(prev => Math.max(10, prev - 2));
       }
@@ -166,14 +183,15 @@ const NewYearGreeting: React.FC = () => {
           .map(star => ({
             ...star,
             y: star.y + star.speed,
-            x: star.x + Math.sin(timestamp * star.swaySpeed + star.swayOffset) * 0.1,
+            x: star.x + Math.sin(timestamp * star.swaySpeed + star.swayOffset) * 0.08,
           }))
           .filter(star => {
+            // If star missed (went off bottom), re-add to queue
             if (star.y > 95 && !star.collected) {
-              setLetterQueue(q => [...q, star.letter]);
+              setLetterQueue(q => [...q, star.letterIndex]);
               return false;
             }
-            return star.y < 100;
+            return star.y < 100 && !star.collected;
           })
       );
 
@@ -196,7 +214,7 @@ const NewYearGreeting: React.FC = () => {
 
       // Check collisions
       setStars(prevStars => {
-        let letterCollected: string | null = null;
+        let collectedIndex: number | null = null;
         let hitOccurred = false;
         
         const updatedStars = prevStars.map(star => {
@@ -210,7 +228,7 @@ const NewYearGreeting: React.FC = () => {
           });
           
           if (hitHeart) {
-            letterCollected = star.letter;
+            collectedIndex = star.letterIndex;
             hitOccurred = true;
             return { ...star, collected: true };
           }
@@ -220,18 +238,12 @@ const NewYearGreeting: React.FC = () => {
 
         if (hitOccurred) {
           setCanShoot(true);
-          setHearts(h => h.filter(heart => {
-            const hitStar = prevStars.some(star => !star.collected && 
-              Math.abs(star.x - heart.x) < 10 && 
-              Math.abs(star.y - heart.y) < 10
-            );
-            return !hitStar;
-          }));
+          setHearts([]);
         }
 
-        if (letterCollected) {
+        if (collectedIndex !== null) {
           playPopSound();
-          setCollectedLetters(prev => new Set([...prev, letterCollected!]));
+          setCollectedPositions(prev => new Set([...prev, collectedIndex!]));
           setLetterQueue(q => q.slice(1));
         }
 
@@ -248,30 +260,31 @@ const NewYearGreeting: React.FC = () => {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [spawnStar, letterQueue, hearts, showPopup, playPopSound, targetX]);
+  }, [spawnStar, letterQueue, hearts, showPopup, playPopSound, targetX, gameStarted, stars]);
 
+  // Check completion
   useEffect(() => {
-    const hasAllLetters = Array.from(UNIQUE_LETTERS).every(letter => 
-      collectedLetters.has(letter)
-    );
+    const allCollected = collectedPositions.size === LETTER_POSITIONS.length;
     
-    if (hasAllLetters && !isComplete) {
+    if (allCollected && !isComplete) {
       setIsComplete(true);
       setTimeout(() => setShowPopup(true), 1500);
     }
-  }, [collectedLetters, isComplete]);
+  }, [collectedPositions, isComplete]);
 
   const handleReplay = useCallback(() => {
     setCharacterX(50);
     setTargetX(50);
     setStars([]);
     setHearts([]);
-    setCollectedLetters(new Set());
-    setLetterQueue([...REQUIRED_LETTERS]);
+    setCollectedPositions(new Set());
+    setLetterQueue(LETTER_POSITIONS.map((_, i) => i));
     setIsComplete(false);
     setShowPopup(false);
     setCanShoot(true);
+    setGameStarted(false);
     lastStarTimeRef.current = 0;
+    setTimeout(() => setGameStarted(true), 500);
   }, []);
 
   return (
@@ -283,13 +296,12 @@ const NewYearGreeting: React.FC = () => {
     >
       {/* Centered Game Box */}
       <div 
-        ref={gameBoxRef}
         className="relative w-full max-w-3xl flex flex-col rounded-3xl overflow-hidden"
         style={{ 
           backgroundColor: 'hsl(40 40% 97%)',
           border: '3px solid hsl(145 35% 80%)',
           boxShadow: '0 20px 60px -15px hsl(145 30% 60% / 0.25)',
-          height: 'min(75vh, 600px)',
+          height: 'min(70vh, 550px)',
         }}
       >
         {/* Author credit */}
@@ -303,7 +315,10 @@ const NewYearGreeting: React.FC = () => {
         </div>
 
         {/* Collected letters display */}
-        <CollectedLetters collected={collectedLetters} isComplete={isComplete} />
+        <CollectedLetters 
+          collectedPositions={collectedPositions} 
+          isComplete={isComplete} 
+        />
 
         {/* Game area */}
         <div className="flex-1 relative overflow-hidden">
@@ -348,7 +363,7 @@ const NewYearGreeting: React.FC = () => {
           ))}
 
           {/* Character */}
-          <Character x={characterX} />
+          <Character x={characterX} isVisible={gameStarted} />
         </div>
       </div>
 
