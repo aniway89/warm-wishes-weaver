@@ -7,7 +7,6 @@ interface GreetingPopupProps {
 
 const GreetingPopup: React.FC<GreetingPopupProps> = ({ isVisible, onReplay }) => {
   const currentYear = new Date().getFullYear();
-  const previousYear = currentYear - 1;
 
   if (!isVisible) return null;
 
@@ -15,21 +14,28 @@ const GreetingPopup: React.FC<GreetingPopupProps> = ({ isVisible, onReplay }) =>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-sage opacity-80"
-        style={{ backgroundColor: 'hsl(145 30% 90% / 0.9)' }}
+        className="absolute inset-0"
+        style={{ backgroundColor: 'hsl(145 30% 90% / 0.85)' }}
       />
       
       {/* Card */}
-      <div className="greeting-card relative max-w-lg w-full p-8 animate-pop-in">
+      <div 
+        className="relative max-w-lg w-full p-6 md:p-8 animate-pop-in rounded-3xl"
+        style={{ 
+          backgroundColor: 'hsl(40 40% 98%)',
+          border: '3px solid hsl(145 35% 80%)',
+          boxShadow: '0 25px 60px -15px hsl(145 30% 50% / 0.3)',
+        }}
+      >
         {/* Decorative corner elements */}
-        <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 rounded-tl-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
-        <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 rounded-tr-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
-        <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 rounded-bl-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
-        <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 rounded-br-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
+        <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 rounded-tl-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
+        <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 rounded-tr-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
+        <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 rounded-bl-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
+        <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 rounded-br-lg" style={{ borderColor: 'hsl(145 35% 75%)' }} />
         
         {/* Title */}
         <h2 
-          className="text-2xl md:text-3xl font-bold text-center mb-6"
+          className="text-xl md:text-2xl font-bold text-center mb-5"
           style={{ color: 'hsl(30 30% 35%)' }}
         >
           Happy New Year {currentYear} ✨
@@ -37,8 +43,8 @@ const GreetingPopup: React.FC<GreetingPopupProps> = ({ isVisible, onReplay }) =>
         
         {/* Message */}
         <div 
-          className="space-y-4 text-center leading-relaxed"
-          style={{ color: 'hsl(30 25% 40%)' }}
+          className="space-y-3 text-center leading-relaxed text-sm md:text-base"
+          style={{ color: 'hsl(30 25% 42%)' }}
         >
           <p>
             Wishing you a beautiful beginning to this new year.
@@ -47,34 +53,34 @@ const GreetingPopup: React.FC<GreetingPopupProps> = ({ isVisible, onReplay }) =>
           </p>
           
           <p>
-            May you create memories worth holding onto,
-            moments that feel unforgettable,
-            and experiences you'll smile about long after the year ends.
-          </p>
-          
-          <p>
-            I hope you live this year fully,
-            enjoy it deeply,
+            May you create unforgettable memories,
+            enjoy every moment deeply,
             and make this year just as meaningful —
-            or even more — than the memories you created in {previousYear}. 🌿
+            or even more — than the memories you created last year. 🌿
           </p>
         </div>
         
         {/* Signature */}
-        <div className="mt-8 text-right">
-          <p className="text-sm" style={{ color: 'hsl(30 20% 50%)' }}>
+        <div className="mt-6 text-right">
+          <p className="text-sm" style={{ color: 'hsl(30 20% 52%)' }}>
             — Ayaan Khan
           </p>
-          <p className="text-sm font-japanese" style={{ color: 'hsl(30 20% 50%)' }}>
+          <p className="text-sm font-japanese" style={{ color: 'hsl(30 20% 52%)' }}>
             アヤーン・カーン
           </p>
         </div>
         
         {/* Replay button */}
-        <div className="mt-8 flex justify-center">
+        <div className="mt-6 flex justify-center">
           <button
             onClick={onReplay}
-            className="replay-button"
+            className="px-6 py-2.5 rounded-full font-medium transition-all duration-200 active:scale-95 hover:scale-105"
+            style={{ 
+              backgroundColor: 'hsl(40 40% 97%)',
+              border: '2px solid hsl(145 35% 75%)',
+              color: 'hsl(30 30% 40%)',
+              boxShadow: '0 4px 12px hsl(145 30% 60% / 0.15)',
+            }}
           >
             Replay Greeting
           </button>
