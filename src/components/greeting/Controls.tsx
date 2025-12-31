@@ -13,15 +13,16 @@ const Controls: React.FC<ControlsProps> = ({ onLeft, onRight, onShoot, isMobile,
   if (!isMobile) return null;
 
   return (
-    <div className="flex items-center justify-center gap-5 mt-5">
+    <div className="flex items-center justify-center gap-4 mt-5">
       <button
         onTouchStart={(e) => { e.preventDefault(); onLeft(); }}
         onClick={onLeft}
-        className="w-14 h-14 flex items-center justify-center rounded-full transition-all duration-150 active:scale-90"
+        className="w-14 h-14 flex items-center justify-center transition-all duration-150 active:scale-90"
         style={{ 
           backgroundColor: 'hsl(40 40% 97%)',
           border: '2px solid hsl(145 35% 80%)',
           boxShadow: '0 4px 12px hsl(145 30% 60% / 0.15)',
+          borderRadius: '1rem',
         }}
         aria-label="Move left"
       >
@@ -31,13 +32,14 @@ const Controls: React.FC<ControlsProps> = ({ onLeft, onRight, onShoot, isMobile,
       <button
         onTouchStart={(e) => { e.preventDefault(); if (canShoot) onShoot(); }}
         onClick={() => { if (canShoot) onShoot(); }}
-        className={`w-16 h-16 flex items-center justify-center rounded-full transition-all duration-150 ${
+        className={`w-16 h-16 flex items-center justify-center transition-all duration-150 ${
           canShoot ? 'active:scale-90' : 'opacity-50'
         }`}
         style={{ 
-          backgroundColor: canShoot ? 'hsl(350 60% 92%)' : 'hsl(350 30% 92%)',
-          border: '2px solid hsl(350 50% 80%)',
+          backgroundColor: canShoot ? 'hsl(350 60% 94%)' : 'hsl(350 30% 94%)',
+          border: '2px solid hsl(350 50% 82%)',
           boxShadow: canShoot ? '0 4px 12px hsl(350 40% 70% / 0.2)' : 'none',
+          borderRadius: '1.25rem',
         }}
         aria-label="Shoot"
         disabled={!canShoot}
@@ -54,11 +56,12 @@ const Controls: React.FC<ControlsProps> = ({ onLeft, onRight, onShoot, isMobile,
       <button
         onTouchStart={(e) => { e.preventDefault(); onRight(); }}
         onClick={onRight}
-        className="w-14 h-14 flex items-center justify-center rounded-full transition-all duration-150 active:scale-90"
+        className="w-14 h-14 flex items-center justify-center transition-all duration-150 active:scale-90"
         style={{ 
           backgroundColor: 'hsl(40 40% 97%)',
           border: '2px solid hsl(145 35% 80%)',
           boxShadow: '0 4px 12px hsl(145 30% 60% / 0.15)',
+          borderRadius: '1rem',
         }}
         aria-label="Move right"
       >
