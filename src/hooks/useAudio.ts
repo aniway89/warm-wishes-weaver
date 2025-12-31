@@ -33,38 +33,7 @@ export const useAudio = () => {
     oscillator.stop(ctx.currentTime + 0.15);
   }, [initAudioContext]);
 
-  const startBackgroundMusic = useCallback(() => {
-    if (bgMusicStartedRef.current) return;
-    
-    const ctx = initAudioContext();
-    if (!ctx) return;
-    
-    bgMusicStartedRef.current = true;
-
-    // Create a dreamy ambient loop using oscillators
-    const playAmbientNote = (frequency: number, startTime: number, duration: number) => {
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      const filterNode = ctx.createBiquadFilter();
-
-      oscillator.connect(filterNode);
-      filterNode.connect(gainNode);
-      gainNode.connect(ctx.destination);
-
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(frequency, startTime);
-
-      filterNode.type = 'lowpass';
-      filterNode.frequency.setValueAtTime(800, startTime);
-
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.03, startTime + 0.5);
-      gainNode.gain.setValueAtTime(0.03, startTime + duration - 0.5);
-      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
-
-      oscillator.start(startTime);
-      oscillator.stop(startTime + duration);
-    };
+ 
 
     // Ambient chord progression
     const chords = [
