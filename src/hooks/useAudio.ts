@@ -61,5 +61,5 @@ export const useAudio = () => {
     playLoop();
   }, [initAudioContext]);
 
-  return { playPopSound, startBackgroundMusic };
+  return { playPopSound };
 };
