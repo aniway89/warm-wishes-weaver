@@ -72,18 +72,7 @@ const GreetingPopup: React.FC<GreetingPopupProps> = ({ isVisible, onReplay }) =>
         
         {/* Replay button */}
         <div className="mt-6 flex justify-center">
-          <button
-            onClick={onReplay}
-            className="px-6 py-2.5 rounded-full font-medium transition-all duration-200 active:scale-95 hover:scale-105"
-            style={{ 
-              backgroundColor: 'hsl(40 40% 97%)',
-              border: '2px solid hsl(145 35% 75%)',
-              color: 'hsl(30 30% 40%)',
-              boxShadow: '0 4px 12px hsl(145 30% 60% / 0.15)',
-            }}
-          >
-            Replay Greeting
-          </button>
+
         </div>
       </div>
     </div>
